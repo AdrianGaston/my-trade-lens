@@ -55,7 +55,7 @@ export function AppSidebar({ activeTab, onTabChange, onAddTrade, onFinalizarDia 
           <img src={candlestickIcon} alt="TradeLens" className="h-6 w-6 shrink-0" />
           {!collapsed && (
             <span className="text-sm font-bold text-foreground tracking-tight whitespace-nowrap">
-              My Trade Lends
+              My Trade Lens
             </span>
           )}
         </div>
