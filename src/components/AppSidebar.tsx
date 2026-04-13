@@ -7,7 +7,6 @@ import {
   CalendarDays,
   StickyNote,
   LayoutDashboard,
-  Plus,
   Flag,
 } from "lucide-react";
 import {
@@ -23,15 +22,12 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 
 export type TabId = "home" | "trading-plan" | "checklist" | "gerenciamento" | "calendario" | "anotacoes" | "dashboard";
 
 interface AppSidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
-  onAddTrade: () => void;
-  onFinalizarDia: () => void;
 }
 
 const menuItems: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -44,7 +40,7 @@ const menuItems: { id: TabId; label: string; icon: React.ComponentType<{ classNa
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
-export function AppSidebar({ activeTab, onTabChange, onAddTrade, onFinalizarDia }: AppSidebarProps) {
+export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
