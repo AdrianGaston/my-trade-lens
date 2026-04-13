@@ -7,6 +7,8 @@ import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { CalendarPage } from "@/components/CalendarPage";
 import { DashboardPage } from "@/components/DashboardPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Plus, Flag } from "lucide-react";
 import type { Trade } from "@/types/trade";
 import { toast } from "@/hooks/use-toast";
 
@@ -72,8 +74,18 @@ const Index = () => {
         />
 
         <div className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center border-b border-border px-4 shrink-0">
+          <header className="h-12 flex items-center justify-between border-b border-border px-4 shrink-0">
             <SidebarTrigger />
+            <div className="flex items-center gap-2">
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => { setEditing(null); setModalOpen(true); }}>
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Adicionar Trade</span>
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleFinalizarDia}>
+                <Flag className="h-4 w-4" />
+                <span className="hidden sm:inline">Finalizar Dia</span>
+              </Button>
+            </div>
           </header>
 
           <main className="flex-1 p-4 space-y-4 overflow-auto">

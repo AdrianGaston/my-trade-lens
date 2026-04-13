@@ -83,18 +83,7 @@ export function AppSidebar({ activeTab, onTabChange, onAddTrade, onFinalizarDia 
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <div className="flex flex-col gap-2 p-2">
-          <Button size="sm" className="w-full gap-1.5 text-xs" onClick={onAddTrade}>
-            <Plus className="h-4 w-4" />
-            {!collapsed && <span>Adicionar Trade</span>}
-          </Button>
-          <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={onFinalizarDia}>
-            <Flag className="h-4 w-4" />
-            {!collapsed && <span>Finalizar Dia</span>}
-          </Button>
-        </div>
-      </SidebarFooter>
+      <SidebarFooter />
     </Sidebar>
   );
 }
