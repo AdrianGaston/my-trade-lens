@@ -7,7 +7,6 @@ import {
   CalendarDays,
   StickyNote,
   LayoutDashboard,
-  Flag,
 } from "lucide-react";
 import {
   Sidebar,

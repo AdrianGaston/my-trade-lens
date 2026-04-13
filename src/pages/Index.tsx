@@ -69,8 +69,6 @@ const Index = () => {
         <AppSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onAddTrade={() => { setEditing(null); setModalOpen(true); }}
-          onFinalizarDia={handleFinalizarDia}
         />
 
         <div className="flex-1 flex flex-col">
