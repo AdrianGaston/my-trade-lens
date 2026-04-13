@@ -7,8 +7,6 @@ import {
   CalendarDays,
   StickyNote,
   LayoutDashboard,
-  Plus,
-  Flag,
 } from "lucide-react";
 import {
   Sidebar,
@@ -23,15 +21,12 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 
 export type TabId = "home" | "trading-plan" | "checklist" | "gerenciamento" | "calendario" | "anotacoes" | "dashboard";
 
 interface AppSidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
-  onAddTrade: () => void;
-  onFinalizarDia: () => void;
 }
 
 const menuItems: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -44,7 +39,7 @@ const menuItems: { id: TabId; label: string; icon: React.ComponentType<{ classNa
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
-export function AppSidebar({ activeTab, onTabChange, onAddTrade, onFinalizarDia }: AppSidebarProps) {
+export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
@@ -83,18 +78,7 @@ export function AppSidebar({ activeTab, onTabChange, onAddTrade, onFinalizarDia 
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <div className="flex flex-col gap-2 p-2">
-          <Button size="sm" className="w-full gap-1.5 text-xs" onClick={onAddTrade}>
-            <Plus className="h-4 w-4" />
-            {!collapsed && <span>Adicionar Trade</span>}
-          </Button>
-          <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={onFinalizarDia}>
-            <Flag className="h-4 w-4" />
-            {!collapsed && <span>Finalizar Dia</span>}
-          </Button>
-        </div>
-      </SidebarFooter>
+      <SidebarFooter />
     </Sidebar>
   );
 }
