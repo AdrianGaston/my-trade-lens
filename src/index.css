@@ -5,7 +5,8 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
-  :root {
+  :root,
+  .dark {
     --background: 220 20% 7%;
     --foreground: 210 20% 92%;
 
@@ -57,6 +58,60 @@
     --sidebar-accent-foreground: 210 20% 92%;
     --sidebar-border: 220 14% 18%;
     --sidebar-ring: 142 60% 45%;
+  }
+
+  .light {
+    --background: 220 14% 96%;
+    --foreground: 220 20% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 14%;
+
+    --primary: 142 60% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 20% 25%;
+
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 142 60% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 87%;
+    --input: 220 13% 87%;
+    --ring: 142 60% 38%;
+
+    --radius: 0.5rem;
+
+    --profit: 142 60% 38%;
+    --loss: 0 72% 50%;
+    --warn: 38 92% 50%;
+
+    --chart-1: 142 60% 38%;
+    --chart-2: 217 91% 55%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 55%;
+    --chart-5: 340 75% 50%;
+    --chart-6: 180 60% 40%;
+    --chart-7: 25 95% 50%;
+    --chart-8: 262 83% 55%;
+
+    --sidebar-background: 220 14% 96%;
+    --sidebar-foreground: 220 20% 14%;
+    --sidebar-primary: 142 60% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 92%;
+    --sidebar-accent-foreground: 220 20% 14%;
+    --sidebar-border: 220 13% 87%;
+    --sidebar-ring: 142 60% 38%;
   }
 }
 
