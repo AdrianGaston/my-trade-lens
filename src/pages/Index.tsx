@@ -84,6 +84,7 @@ const Index = () => {
                 <Flag className="h-4 w-4" />
                 <span className="hidden sm:inline">Finalizar Dia</span>
               </Button>
+              <ThemeToggle />
             </div>
           </header>
 
