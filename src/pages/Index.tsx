@@ -8,6 +8,7 @@ import { CalendarPage } from "@/components/CalendarPage";
 import { DashboardPage } from "@/components/DashboardPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Plus, Flag } from "lucide-react";
 import type { Trade } from "@/types/trade";
 import { toast } from "@/hooks/use-toast";
@@ -83,6 +84,7 @@ const Index = () => {
                 <Flag className="h-4 w-4" />
                 <span className="hidden sm:inline">Finalizar Dia</span>
               </Button>
+              <ThemeToggle />
             </div>
           </header>
 
