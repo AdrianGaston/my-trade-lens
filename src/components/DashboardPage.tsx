@@ -86,7 +86,6 @@ export function DashboardPage({ trades }: Props) {
     };
   }, [filtered]);
 
-  // Evolution chart (monthly cumulative)
   const evolutionData = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => ({
       month: new Date(new Date().getFullYear(), i).toLocaleString("pt-BR", { month: "short" }),
@@ -99,7 +98,6 @@ export function DashboardPage({ trades }: Props) {
       acc += t.resultDollar;
       months[m].resultado = acc;
     });
-    // Forward-fill accumulated values
     for (let i = 1; i < 12; i++) {
       if (months[i].resultado === 0 && months[i - 1].resultado !== 0) {
         months[i].resultado = months[i - 1].resultado;
@@ -202,7 +200,7 @@ export function DashboardPage({ trades }: Props) {
       {/* Stats */}
       <StatsCards stats={stats} />
 
-      {/* Evolution Chart */}
+      {/* Evolução Anual - full width */}
       <Card className="bg-card border-border">
         <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Evolução Anual</CardTitle></CardHeader>
         <CardContent className="h-[300px]">
@@ -218,45 +216,11 @@ export function DashboardPage({ trades }: Props) {
         </CardContent>
       </Card>
 
-      {/* Row 2: Operations + Trend + Result */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Operações</CardTitle></CardHeader>
-          <CardContent className="h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={operationsData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
-                <XAxis type="number" stroke="hsl(215, 15%, 55%)" fontSize={12} />
-                <YAxis dataKey="name" type="category" stroke="hsl(215, 15%, 55%)" fontSize={12} width={50} />
-                <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]}>
-                  {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Tendência</CardTitle></CardHeader>
-          <CardContent className="h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
-                <XAxis dataKey="name" stroke="hsl(215, 15%, 55%)" fontSize={11} />
-                <YAxis stroke="hsl(215, 15%, 55%)" fontSize={12} />
-                <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" name="Quantidade" radius={[4, 4, 0, 0]}>
-                  {trendData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+      {/* Row 1: Resultado das Operações + Operações */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Resultado das Operações</CardTitle></CardHeader>
-          <CardContent className="h-[250px]">
+          <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={resultData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
@@ -270,13 +234,30 @@ export function DashboardPage({ trades }: Props) {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Operações</CardTitle></CardHeader>
+          <CardContent className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={operationsData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
+                <XAxis type="number" stroke="hsl(215, 15%, 55%)" fontSize={12} />
+                <YAxis dataKey="name" type="category" stroke="hsl(215, 15%, 55%)" fontSize={12} width={50} />
+                <Tooltip {...tooltipStyle} />
+                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]}>
+                  {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Row 3: Setup + Errors */}
+      {/* Row 2: Setup + Tendência */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Setup</CardTitle></CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={setupData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
@@ -289,8 +270,28 @@ export function DashboardPage({ trades }: Props) {
         </Card>
 
         <Card className="bg-card border-border">
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Tendência</CardTitle></CardHeader>
+          <CardContent className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
+                <XAxis dataKey="name" stroke="hsl(215, 15%, 55%)" fontSize={11} />
+                <YAxis stroke="hsl(215, 15%, 55%)" fontSize={12} />
+                <Tooltip {...tooltipStyle} />
+                <Bar dataKey="value" name="Quantidade" radius={[4, 4, 0, 0]}>
+                  {trendData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 3: Erros Operacionais + Sentimentos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Erros Operacionais</CardTitle></CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={errorsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
@@ -304,23 +305,22 @@ export function DashboardPage({ trades }: Props) {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Row 4: Sentiments */}
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Sentimentos</CardTitle></CardHeader>
-        <CardContent className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={sentimentData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={110} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                {sentimentData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-              </Pie>
-              <Tooltip {...tooltipStyle} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Sentimentos</CardTitle></CardHeader>
+          <CardContent className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={sentimentData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {sentimentData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                </Pie>
+                <Tooltip {...tooltipStyle} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
