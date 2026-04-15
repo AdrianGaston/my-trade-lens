@@ -10,7 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, Legend,
+  BarChart, Bar, PieChart, Pie, Cell, Legend, FunnelChart, Funnel, LabelList,
 } from "recharts";
 import type { Trade } from "@/types/trade";
 import { ASSETS, SETUPS } from "@/types/trade";
