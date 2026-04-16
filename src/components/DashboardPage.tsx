@@ -17,6 +17,22 @@ import { ASSETS, SETUPS } from "@/types/trade";
 import { StatsCards } from "./StatsCards";
 
 type Period = "today" | "week" | "month" | "year" | "custom";
+type PieLabelProps = {
+  cx?: number | string;
+  cy?: number | string;
+  midAngle?: number | string;
+  innerRadius?: number | string;
+  outerRadius?: number | string;
+  percent?: number;
+};
+type FunnelLabelProps = {
+  x?: number | string;
+  y?: number | string;
+  width?: number | string;
+  height?: number | string;
+  payload?: { name?: string };
+  value?: number | string;
+};
 
 const CHART_COLORS = [
   "hsl(142, 60%, 45%)",
@@ -29,6 +45,76 @@ const CHART_COLORS = [
   "hsl(262, 83%, 58%)",
   "hsl(0, 72%, 55%)",
 ];
+const CHART_TEXT = "hsl(var(--foreground))";
+const CHART_MUTED = "hsl(var(--muted-foreground))";
+const CHART_GRID = "hsl(var(--border))";
+const PIE_MARGIN = { top: 16, right: 48, bottom: 20, left: 48 };
+const FUNNEL_MARGIN = { top: 8, right: 144, bottom: 8, left: 12 };
+const LEGEND_STYLE = { fontSize: 12, color: CHART_MUTED, paddingTop: 12 };
+const MIN_PERCENT_LABEL = 0.08;
+const RADIAN = Math.PI / 180;
+
+const renderPiePercentLabel = ({
+  cx = 0,
+  cy = 0,
+  midAngle = 0,
+  innerRadius = 0,
+  outerRadius = 0,
+  percent = 0,
+}: PieLabelProps) => {
+  if (percent < MIN_PERCENT_LABEL) return null;
+
+  const inner = Number(innerRadius);
+  const outer = Number(outerRadius);
+  const radius = inner + (outer - inner) * 0.6;
+  const angle = -Number(midAngle) * RADIAN;
+  const x = Number(cx) + radius * Math.cos(angle);
+  const y = Number(cy) + radius * Math.sin(angle);
+
+  return (
+    <text x={x} y={y} fill={CHART_TEXT} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
+      {`${Math.round(percent * 100)}%`}
+    </text>
+  );
+};
+
+const wrapFunnelLabel = (text: string, maxChars = 16) => {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  words.forEach((word) => {
+    const nextLine = currentLine ? `${currentLine} ${word}` : word;
+    if (nextLine.length <= maxChars || !currentLine) {
+      currentLine = nextLine;
+      return;
+    }
+    lines.push(currentLine);
+    currentLine = word;
+  });
+
+  if (currentLine) lines.push(currentLine);
+  return lines.slice(0, 2);
+};
+
+const renderFunnelLabel = ({ x = 0, y = 0, width = 0, height = 0, payload, value }: FunnelLabelProps) => {
+  const label = payload?.name ?? String(value ?? "");
+  if (!label) return null;
+
+  const lines = wrapFunnelLabel(label);
+  const labelX = Number(x) + Number(width) + 12;
+  const labelY = Number(y) + Number(height) / 2 - ((lines.length - 1) * 6);
+
+  return (
+    <text x={labelX} y={labelY} fill={CHART_TEXT} textAnchor="start" dominantBaseline="middle" fontSize={11}>
+      {lines.map((line, index) => (
+        <tspan key={`${line}-${index}`} x={labelX} dy={index === 0 ? 0 : 12}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
+};
 
 interface Props {
   trades: Trade[];
@@ -121,6 +207,16 @@ export function DashboardPage({ trades }: Props) {
     [filtered]
   );
 
+  const sortedErrorsData = useMemo(
+    () => [...errorsData].sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[(i + 4) % CHART_COLORS.length] })),
+    [errorsData]
+  );
+
+  const sortedSentimentData = useMemo(
+    () => [...sentimentData].sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[i % CHART_COLORS.length] })),
+    [sentimentData]
+  );
+
   const resultData = useMemo(() => {
     const gain = filtered.filter((t) => t.resultDollar > 0).length;
     const loss = filtered.filter((t) => t.resultDollar < 0).length;
@@ -133,9 +229,9 @@ export function DashboardPage({ trades }: Props) {
   }, [filtered]);
 
   const tooltipStyle = {
-    contentStyle: { backgroundColor: "hsl(220, 18%, 12%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: 8 },
-    labelStyle: { color: "hsl(210, 20%, 92%)" },
-    itemStyle: { color: "hsl(210, 20%, 92%)" },
+    contentStyle: { backgroundColor: "hsl(var(--card))", border: `1px solid ${CHART_GRID}`, borderRadius: 8 },
+    labelStyle: { color: CHART_TEXT },
+    itemStyle: { color: CHART_TEXT },
   };
 
   return (
@@ -205,12 +301,20 @@ export function DashboardPage({ trades }: Props) {
         <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Evolução Anual</CardTitle></CardHeader>
         <CardContent className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={evolutionData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
-              <XAxis dataKey="month" stroke="hsl(215, 15%, 55%)" fontSize={12} />
-              <YAxis stroke="hsl(215, 15%, 55%)" fontSize={12} />
+              <LineChart data={evolutionData} margin={{ top: 12, right: 20, bottom: 8, left: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} vertical={false} />
+                <XAxis dataKey="month" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} width={64} />
               <Tooltip {...tooltipStyle} />
-              <Line type="monotone" dataKey="resultado" stroke="hsl(142, 60%, 45%)" strokeWidth={2} dot={{ fill: "hsl(142, 60%, 45%)", r: 4 }} name="Resultado $" />
+                <Line
+                  type="monotone"
+                  dataKey="resultado"
+                  stroke="hsl(142, 60%, 45%)"
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(142, 60%, 45%)", r: 4, stroke: "none" }}
+                  activeDot={{ r: 5, fill: "hsl(142, 60%, 45%)", stroke: "none" }}
+                  name="Resultado $"
+                />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -220,16 +324,28 @@ export function DashboardPage({ trades }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Resultado das Operações</CardTitle></CardHeader>
-          <CardContent className="h-[280px]">
+          <CardContent className="h-[300px] md:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={resultData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
-                  <Cell fill="hsl(142, 60%, 45%)" />
-                  <Cell fill="hsl(0, 72%, 55%)" />
-                  <Cell fill="hsl(215, 15%, 55%)" />
+              <PieChart margin={PIE_MARGIN}>
+                <Pie
+                  data={resultData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="46%"
+                  innerRadius={46}
+                  outerRadius={72}
+                  paddingAngle={2}
+                  stroke="none"
+                  labelLine={false}
+                  label={renderPiePercentLabel}
+                >
+                  <Cell fill="hsl(142, 60%, 45%)" stroke="none" />
+                  <Cell fill="hsl(0, 72%, 55%)" stroke="none" />
+                  <Cell fill="hsl(215, 15%, 55%)" stroke="none" />
                 </Pie>
                 <Tooltip {...tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={LEGEND_STYLE} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -239,13 +355,13 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Operações</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={operationsData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
-                <XAxis type="number" stroke="hsl(215, 15%, 55%)" fontSize={12} />
-                <YAxis dataKey="name" type="category" stroke="hsl(215, 15%, 55%)" fontSize={12} width={50} />
+              <BarChart data={operationsData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
+                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis dataKey="name" type="category" stroke={CHART_MUTED} fontSize={12} width={64} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none">
-                  {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none" barSize={28}>
+                  {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="none" />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -257,13 +373,25 @@ export function DashboardPage({ trades }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Setup</CardTitle></CardHeader>
-          <CardContent className="h-[280px]">
+          <CardContent className="h-[300px] md:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-                <Pie data={setupData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} paddingAngle={2} stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
-                  {setupData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+              <PieChart margin={PIE_MARGIN}>
+                <Pie
+                  data={setupData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="46%"
+                  outerRadius={70}
+                  paddingAngle={2}
+                  stroke="none"
+                  labelLine={false}
+                  label={renderPiePercentLabel}
+                >
+                  {setupData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="none" />)}
                 </Pie>
                 <Tooltip {...tooltipStyle} />
+                <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={LEGEND_STYLE} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -271,14 +399,26 @@ export function DashboardPage({ trades }: Props) {
 
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Tendência</CardTitle></CardHeader>
-          <CardContent className="h-[280px]">
+          <CardContent className="h-[300px] md:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-                <Pie data={trendData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={2} stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
-                  {trendData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+              <PieChart margin={PIE_MARGIN}>
+                <Pie
+                  data={trendData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="46%"
+                  innerRadius={40}
+                  outerRadius={68}
+                  paddingAngle={2}
+                  stroke="none"
+                  labelLine={false}
+                  label={renderPiePercentLabel}
+                >
+                  {trendData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="none" />)}
                 </Pie>
                 <Tooltip {...tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Legend verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={LEGEND_STYLE} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -291,10 +431,10 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Erros Operacionais</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart margin={{ top: 5, right: 80, bottom: 5, left: 10 }}>
+              <FunnelChart margin={FUNNEL_MARGIN}>
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={errorsData.sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[(i + 4) % CHART_COLORS.length] }))} isAnimationActive stroke="none">
-                  <LabelList position="right" fill="hsl(210, 20%, 92%)" stroke="none" dataKey="name" fontSize={11} />
+                <Funnel dataKey="value" data={sortedErrorsData} isAnimationActive stroke="none">
+                  <LabelList dataKey="name" content={renderFunnelLabel} />
                 </Funnel>
               </FunnelChart>
             </ResponsiveContainer>
@@ -305,10 +445,10 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Sentimentos</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart margin={{ top: 5, right: 80, bottom: 5, left: 10 }}>
+              <FunnelChart margin={FUNNEL_MARGIN}>
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={sentimentData.sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[i % CHART_COLORS.length] }))} isAnimationActive stroke="none">
-                  <LabelList position="right" fill="hsl(210, 20%, 92%)" stroke="none" dataKey="name" fontSize={11} />
+                <Funnel dataKey="value" data={sortedSentimentData} isAnimationActive stroke="none">
+                  <LabelList dataKey="name" content={renderFunnelLabel} />
                 </Funnel>
               </FunnelChart>
             </ResponsiveContainer>
