@@ -223,13 +223,13 @@ export function DashboardPage({ trades }: Props) {
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={resultData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                <Pie data={resultData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
                   <Cell fill="hsl(142, 60%, 45%)" />
                   <Cell fill="hsl(0, 72%, 55%)" />
                   <Cell fill="hsl(215, 15%, 55%)" />
                 </Pie>
                 <Tooltip {...tooltipStyle} />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -244,7 +244,7 @@ export function DashboardPage({ trades }: Props) {
                 <XAxis type="number" stroke="hsl(215, 15%, 55%)" fontSize={12} />
                 <YAxis dataKey="name" type="category" stroke="hsl(215, 15%, 55%)" fontSize={12} width={50} />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]}>
+                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none">
                   {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                 </Bar>
               </BarChart>
@@ -259,8 +259,8 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Setup</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={setupData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+                <Pie data={setupData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} paddingAngle={2} stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
                   {setupData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                 </Pie>
                 <Tooltip {...tooltipStyle} />
@@ -273,12 +273,12 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Tendência</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={trendData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+                <Pie data={trendData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={2} stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
                   {trendData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                 </Pie>
                 <Tooltip {...tooltipStyle} />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -291,9 +291,9 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Erros Operacionais</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart>
+              <FunnelChart margin={{ top: 5, right: 80, bottom: 5, left: 10 }}>
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={errorsData.sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[(i + 4) % CHART_COLORS.length] }))} isAnimationActive>
+                <Funnel dataKey="value" data={errorsData.sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[(i + 4) % CHART_COLORS.length] }))} isAnimationActive stroke="none">
                   <LabelList position="right" fill="hsl(210, 20%, 92%)" stroke="none" dataKey="name" fontSize={11} />
                 </Funnel>
               </FunnelChart>
@@ -305,9 +305,9 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Sentimentos</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart>
+              <FunnelChart margin={{ top: 5, right: 80, bottom: 5, left: 10 }}>
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={sentimentData.sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[i % CHART_COLORS.length] }))} isAnimationActive>
+                <Funnel dataKey="value" data={sentimentData.sort((a, b) => b.value - a.value).map((d, i) => ({ ...d, fill: CHART_COLORS[i % CHART_COLORS.length] }))} isAnimationActive stroke="none">
                   <LabelList position="right" fill="hsl(210, 20%, 92%)" stroke="none" dataKey="name" fontSize={11} />
                 </Funnel>
               </FunnelChart>
