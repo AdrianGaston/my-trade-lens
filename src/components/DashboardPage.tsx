@@ -448,12 +448,15 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Sentimentos</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart margin={FUNNEL_MARGIN}>
+              <BarChart data={sortedSentimentData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
+                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis dataKey="name" type="category" stroke={CHART_MUTED} fontSize={12} width={110} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={sortedSentimentData} isAnimationActive stroke="none">
-                  <LabelList dataKey="name" content={renderFunnelLabel} />
-                </Funnel>
-              </FunnelChart>
+                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none" barSize={20}>
+                  {sortedSentimentData.map((d, i) => <Cell key={i} fill={d.fill} stroke="none" />)}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
