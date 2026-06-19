@@ -129,8 +129,8 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
         )}
         {field("Setup", sel("Selecionar", form.setup, (v) => setForm({ ...form, setup: v }), SETUPS))}
         {field("Tendência", sel("Selecionar", form.trend, (v) => setForm({ ...form, trend: v }), TRENDS))}
-        {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS))}
         {field("Erro", sel("Selecionar", form.error, (v) => setForm({ ...form, error: v }), ERRORS))}
+        {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS))}
         {field("Pontos",
           <Input type="number" step="0.01" placeholder="0.00" value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
         )}

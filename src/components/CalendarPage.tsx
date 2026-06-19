@@ -114,7 +114,13 @@ export function CalendarPage() {
       .then((res) => res.json())
       .then((data: Holiday[]) => {
         const map: HolidayMap = {};
-        const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date));
+        const uniqueByDate = new Map<string, Holiday>();
+        [...data]
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .forEach((h) => {
+            if (!uniqueByDate.has(h.date)) uniqueByDate.set(h.date, h);
+          });
+        const sorted = Array.from(uniqueByDate.values());
         sorted.forEach((h) => {
           map[h.date] = h.localName;
         });
