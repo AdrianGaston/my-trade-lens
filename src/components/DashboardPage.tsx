@@ -333,8 +333,8 @@ export function DashboardPage({ trades }: Props) {
                   nameKey="name"
                   cx="50%"
                   cy="46%"
-                  innerRadius={46}
-                  outerRadius={72}
+                  innerRadius={60}
+                  outerRadius={100}
                   paddingAngle={2}
                   stroke="none"
                   labelLine={false}
@@ -355,12 +355,12 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Operações</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={operationsData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
-                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
-                <YAxis dataKey="name" type="category" stroke={CHART_MUTED} fontSize={12} width={64} axisLine={false} tickLine={false} />
+              <BarChart data={operationsData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} vertical={false} />
+                <XAxis dataKey="name" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis stroke={CHART_MUTED} fontSize={12} width={48} axisLine={false} tickLine={false} tickMargin={8} />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none" barSize={28}>
+                <Bar dataKey="value" name="Quantidade" radius={[4, 4, 0, 0]} stroke="none" barSize={56}>
                   {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="none" />)}
                 </Bar>
               </BarChart>
@@ -382,7 +382,7 @@ export function DashboardPage({ trades }: Props) {
                   nameKey="name"
                   cx="50%"
                   cy="46%"
-                  outerRadius={70}
+                  outerRadius={100}
                   paddingAngle={2}
                   stroke="none"
                   labelLine={false}
@@ -408,8 +408,8 @@ export function DashboardPage({ trades }: Props) {
                   nameKey="name"
                   cx="50%"
                   cy="46%"
-                  innerRadius={40}
-                  outerRadius={68}
+                  innerRadius={56}
+                  outerRadius={100}
                   paddingAngle={2}
                   stroke="none"
                   labelLine={false}
@@ -431,12 +431,15 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Erros Operacionais</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart margin={FUNNEL_MARGIN}>
+              <BarChart data={sortedErrorsData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
+                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis dataKey="name" type="category" stroke={CHART_MUTED} fontSize={12} width={110} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={sortedErrorsData} isAnimationActive stroke="none">
-                  <LabelList dataKey="name" content={renderFunnelLabel} />
-                </Funnel>
-              </FunnelChart>
+                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none" barSize={20}>
+                  {sortedErrorsData.map((d, i) => <Cell key={i} fill={d.fill} stroke="none" />)}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -445,12 +448,15 @@ export function DashboardPage({ trades }: Props) {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Sentimentos</CardTitle></CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <FunnelChart margin={FUNNEL_MARGIN}>
+              <BarChart data={sortedSentimentData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
+                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis dataKey="name" type="category" stroke={CHART_MUTED} fontSize={12} width={110} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} />
-                <Funnel dataKey="value" data={sortedSentimentData} isAnimationActive stroke="none">
-                  <LabelList dataKey="name" content={renderFunnelLabel} />
-                </Funnel>
-              </FunnelChart>
+                <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none" barSize={20}>
+                  {sortedSentimentData.map((d, i) => <Cell key={i} fill={d.fill} stroke="none" />)}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
