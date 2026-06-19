@@ -408,8 +408,8 @@ export function DashboardPage({ trades }: Props) {
                   nameKey="name"
                   cx="50%"
                   cy="46%"
-                  innerRadius={40}
-                  outerRadius={68}
+                  innerRadius={56}
+                  outerRadius={100}
                   paddingAngle={2}
                   stroke="none"
                   labelLine={false}
