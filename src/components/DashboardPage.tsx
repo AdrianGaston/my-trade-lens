@@ -382,7 +382,7 @@ export function DashboardPage({ trades }: Props) {
                   nameKey="name"
                   cx="50%"
                   cy="46%"
-                  outerRadius={70}
+                  outerRadius={100}
                   paddingAngle={2}
                   stroke="none"
                   labelLine={false}
