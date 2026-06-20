@@ -118,6 +118,9 @@ const Index = () => {
     if (activeTab === "calendario") {
       return <CalendarPage />;
     }
+    if (activeTab === "anotacoes") {
+      return <NotesPage />;
+    }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
 
