@@ -7,6 +7,7 @@ import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { CalendarPage } from "@/components/CalendarPage";
 import { DashboardPage } from "@/components/DashboardPage";
 import { NotesPage } from "@/components/NotesPage";
+import { TradingPlanPage } from "@/components/TradingPlanPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -86,7 +87,6 @@ const Index = () => {
     setMonthCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
   const placeholders: Record<string, string> = {
-    "trading-plan": "Trading Plan",
     checklist: "CheckList",
     gerenciamento: "Gerenciamento",
   };
@@ -120,6 +120,9 @@ const Index = () => {
     }
     if (activeTab === "anotacoes") {
       return <NotesPage />;
+    }
+    if (activeTab === "trading-plan") {
+      return <TradingPlanPage />;
     }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
