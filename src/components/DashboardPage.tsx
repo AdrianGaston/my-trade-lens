@@ -450,7 +450,7 @@ export function DashboardPage({ trades }: Props) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={sortedSentimentData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} horizontal={false} />
-                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
+                <XAxis type="number" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} allowDecimals={false} domain={[0, (dataMax: number) => Math.max(1, Math.ceil(dataMax))]} />
                 <YAxis dataKey="name" type="category" stroke={CHART_MUTED} fontSize={12} width={110} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} />
                 <Bar dataKey="value" name="Quantidade" radius={[0, 4, 4, 0]} stroke="none" barSize={20}>
