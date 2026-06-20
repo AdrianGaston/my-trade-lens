@@ -121,6 +121,9 @@ const Index = () => {
     if (activeTab === "anotacoes") {
       return <NotesPage />;
     }
+    if (activeTab === "trading-plan") {
+      return <TradingPlanPage />;
+    }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
 
