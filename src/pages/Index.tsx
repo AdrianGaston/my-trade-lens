@@ -6,6 +6,7 @@ import { TradeTable } from "@/components/TradeTable";
 import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { CalendarPage } from "@/components/CalendarPage";
 import { DashboardPage } from "@/components/DashboardPage";
+import { NotesPage } from "@/components/NotesPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
