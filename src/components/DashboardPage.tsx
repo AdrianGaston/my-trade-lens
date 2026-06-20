@@ -358,7 +358,7 @@ export function DashboardPage({ trades }: Props) {
               <BarChart data={operationsData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} vertical={false} />
                 <XAxis dataKey="name" stroke={CHART_MUTED} fontSize={12} axisLine={false} tickLine={false} tickMargin={8} />
-                <YAxis stroke={CHART_MUTED} fontSize={12} width={48} axisLine={false} tickLine={false} tickMargin={8} />
+                <YAxis stroke={CHART_MUTED} fontSize={12} width={48} axisLine={false} tickLine={false} tickMargin={8} allowDecimals={false} domain={[0, (dataMax: number) => Math.max(1, Math.ceil(dataMax))]} />
                 <Tooltip {...tooltipStyle} />
                 <Bar dataKey="value" name="Quantidade" radius={[4, 4, 0, 0]} stroke="none" barSize={56}>
                   {operationsData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="none" />)}
