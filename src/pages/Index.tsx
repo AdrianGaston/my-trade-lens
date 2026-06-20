@@ -89,7 +89,6 @@ const Index = () => {
     "trading-plan": "Trading Plan",
     checklist: "CheckList",
     gerenciamento: "Gerenciamento",
-    anotacoes: "Anotações",
   };
 
   const renderContent = () => {
