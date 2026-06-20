@@ -6,6 +6,7 @@ import { TradeTable } from "@/components/TradeTable";
 import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { CalendarPage } from "@/components/CalendarPage";
 import { DashboardPage } from "@/components/DashboardPage";
+import { NotesPage } from "@/components/NotesPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -88,7 +89,6 @@ const Index = () => {
     "trading-plan": "Trading Plan",
     checklist: "CheckList",
     gerenciamento: "Gerenciamento",
-    anotacoes: "Anotações",
   };
 
   const renderContent = () => {
@@ -117,6 +117,9 @@ const Index = () => {
     }
     if (activeTab === "calendario") {
       return <CalendarPage />;
+    }
+    if (activeTab === "anotacoes") {
+      return <NotesPage />;
     }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
