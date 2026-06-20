@@ -87,7 +87,6 @@ const Index = () => {
     setMonthCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
   const placeholders: Record<string, string> = {
-    "trading-plan": "Trading Plan",
     checklist: "CheckList",
     gerenciamento: "Gerenciamento",
   };
