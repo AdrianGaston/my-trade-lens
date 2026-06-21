@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { EditableCard, useReorder } from "@/components/EditableCard";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type TextItem = { id: string; text: string };
 type TaskItem = { id: string; text: string; done: boolean };
@@ -26,10 +26,17 @@ function load<T>(key: string, fallback: T): T {
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+type DeleteTarget = { kind: "goal" | "task" | "note"; id: string } | null;
+
 export function NotesPage() {
   const [goals, setGoals] = useState<TextItem[]>(() => load(KEYS.goals, []));
   const [tasks, setTasks] = useState<TaskItem[]>(() => load(KEYS.tasks, []));
   const [notes, setNotes] = useState<TextItem[]>(() => load(KEYS.notes, []));
+  const [pendingDelete, setPendingDelete] = useState<DeleteTarget>(null);
+
+  const reorderGoals = useReorder(setGoals);
+  const reorderTasks = useReorder(setTasks);
+  const reorderNotes = useReorder(setNotes);
 
   useEffect(() => localStorage.setItem(KEYS.goals, JSON.stringify(goals)), [goals]);
   useEffect(() => localStorage.setItem(KEYS.tasks, JSON.stringify(tasks)), [tasks]);
@@ -38,17 +45,30 @@ export function NotesPage() {
   const addGoal = () => setGoals((g) => [...g, { id: uid(), text: "" }]);
   const updateGoal = (id: string, text: string) =>
     setGoals((g) => g.map((i) => (i.id === id ? { ...i, text } : i)));
-  const removeGoal = (id: string) => setGoals((g) => g.filter((i) => i.id !== id));
 
   const addTask = () => setTasks((t) => [...t, { id: uid(), text: "", done: false }]);
   const updateTask = (id: string, patch: Partial<TaskItem>) =>
     setTasks((t) => t.map((i) => (i.id === id ? { ...i, ...patch } : i)));
-  const removeTask = (id: string) => setTasks((t) => t.filter((i) => i.id !== id));
 
   const addNote = () => setNotes((n) => [...n, { id: uid(), text: "" }]);
   const updateNote = (id: string, text: string) =>
     setNotes((n) => n.map((i) => (i.id === id ? { ...i, text } : i)));
-  const removeNote = (id: string) => setNotes((n) => n.filter((i) => i.id !== id));
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const { kind, id } = pendingDelete;
+    if (kind === "goal") setGoals((g) => g.filter((i) => i.id !== id));
+    if (kind === "task") setTasks((t) => t.filter((i) => i.id !== id));
+    if (kind === "note") setNotes((n) => n.filter((i) => i.id !== id));
+    setPendingDelete(null);
+  };
+
+  const descriptionFor = (kind: DeleteTarget extends infer T ? T : never) => {
+    if (!pendingDelete) return undefined;
+    if (pendingDelete.kind === "note") return "Tem certeza que deseja excluir esta anotação?";
+    if (pendingDelete.kind === "task") return "Tem certeza que deseja excluir esta tarefa?";
+    return "Tem certeza que deseja excluir este objetivo?";
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -63,22 +83,18 @@ export function NotesPage() {
           {goals.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhum objetivo adicionado.</p>
           )}
-          {goals.map((g) => (
-            <div key={g.id} className="flex items-center gap-2">
-              <Input
-                value={g.text}
-                placeholder="Escreva um objetivo..."
-                onChange={(e) => updateGoal(g.id, e.target.value)}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => removeGoal(g.id)}
-                aria-label="Remover"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+          {goals.map((g, idx) => (
+            <EditableCard
+              key={g.id}
+              text={g.text}
+              placeholder="Escreva um objetivo..."
+              canMoveUp={idx > 0}
+              canMoveDown={idx < goals.length - 1}
+              onChange={(text) => updateGoal(g.id, text)}
+              onDelete={() => setPendingDelete({ kind: "goal", id: g.id })}
+              onMoveUp={() => reorderGoals(idx, -1)}
+              onMoveDown={() => reorderGoals(idx, 1)}
+            />
           ))}
         </CardContent>
       </Card>
@@ -94,27 +110,25 @@ export function NotesPage() {
           {tasks.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma tarefa adicionada.</p>
           )}
-          {tasks.map((t) => (
-            <div key={t.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={t.done}
-                onCheckedChange={(v) => updateTask(t.id, { done: Boolean(v) })}
-              />
-              <Input
-                value={t.text}
-                placeholder="Descreva uma tarefa..."
-                onChange={(e) => updateTask(t.id, { text: e.target.value })}
-                className={t.done ? "line-through text-muted-foreground" : ""}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => removeTask(t.id)}
-                aria-label="Remover"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+          {tasks.map((t, idx) => (
+            <EditableCard
+              key={t.id}
+              text={t.text}
+              placeholder="Descreva uma tarefa..."
+              leading={
+                <Checkbox
+                  checked={t.done}
+                  onCheckedChange={(v) => updateTask(t.id, { done: Boolean(v) })}
+                />
+              }
+              textClassName={t.done ? "line-through text-muted-foreground" : ""}
+              canMoveUp={idx > 0}
+              canMoveDown={idx < tasks.length - 1}
+              onChange={(text) => updateTask(t.id, { text })}
+              onDelete={() => setPendingDelete({ kind: "task", id: t.id })}
+              onMoveUp={() => reorderTasks(idx, -1)}
+              onMoveDown={() => reorderTasks(idx, 1)}
+            />
           ))}
         </CardContent>
       </Card>
@@ -130,26 +144,29 @@ export function NotesPage() {
           {notes.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma anotação adicionada.</p>
           )}
-          {notes.map((n) => (
-            <div key={n.id} className="flex items-start gap-2">
-              <Textarea
-                value={n.text}
-                placeholder="Escreva uma anotação..."
-                onChange={(e) => updateNote(n.id, e.target.value)}
-                className="min-h-[60px]"
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => removeNote(n.id)}
-                aria-label="Remover"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+          {notes.map((n, idx) => (
+            <EditableCard
+              key={n.id}
+              text={n.text}
+              placeholder="Escreva uma anotação..."
+              multiline
+              canMoveUp={idx > 0}
+              canMoveDown={idx < notes.length - 1}
+              onChange={(text) => updateNote(n.id, text)}
+              onDelete={() => setPendingDelete({ kind: "note", id: n.id })}
+              onMoveUp={() => reorderNotes(idx, -1)}
+              onMoveDown={() => reorderNotes(idx, 1)}
+            />
           ))}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={pendingDelete !== null}
+        onOpenChange={(v) => { if (!v) setPendingDelete(null); }}
+        onConfirm={confirmDelete}
+        description={descriptionFor(pendingDelete)}
+      />
     </div>
   );
 }
