@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
-import { EditableCard, useReorder } from "@/components/EditableCard";
+import { EditableCard, SortableList } from "@/components/EditableCard";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type TextItem = { id: string; text: string };
@@ -34,10 +34,6 @@ export function NotesPage() {
   const [notes, setNotes] = useState<TextItem[]>(() => load(KEYS.notes, []));
   const [pendingDelete, setPendingDelete] = useState<DeleteTarget>(null);
 
-  const reorderGoals = useReorder(setGoals);
-  const reorderTasks = useReorder(setTasks);
-  const reorderNotes = useReorder(setNotes);
-
   useEffect(() => localStorage.setItem(KEYS.goals, JSON.stringify(goals)), [goals]);
   useEffect(() => localStorage.setItem(KEYS.tasks, JSON.stringify(tasks)), [tasks]);
   useEffect(() => localStorage.setItem(KEYS.notes, JSON.stringify(notes)), [notes]);
@@ -63,7 +59,7 @@ export function NotesPage() {
     setPendingDelete(null);
   };
 
-  const descriptionFor = (kind: DeleteTarget extends infer T ? T : never) => {
+  const deleteDescription = () => {
     if (!pendingDelete) return undefined;
     if (pendingDelete.kind === "note") return "Tem certeza que deseja excluir esta anotação?";
     if (pendingDelete.kind === "task") return "Tem certeza que deseja excluir esta tarefa?";
@@ -83,19 +79,18 @@ export function NotesPage() {
           {goals.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhum objetivo adicionado.</p>
           )}
-          {goals.map((g, idx) => (
-            <EditableCard
-              key={g.id}
-              text={g.text}
-              placeholder="Escreva um objetivo..."
-              canMoveUp={idx > 0}
-              canMoveDown={idx < goals.length - 1}
-              onChange={(text) => updateGoal(g.id, text)}
-              onDelete={() => setPendingDelete({ kind: "goal", id: g.id })}
-              onMoveUp={() => reorderGoals(idx, -1)}
-              onMoveDown={() => reorderGoals(idx, 1)}
-            />
-          ))}
+          <SortableList items={goals} onReorder={setGoals}>
+            {goals.map((g) => (
+              <EditableCard
+                key={g.id}
+                id={g.id}
+                text={g.text}
+                placeholder="Escreva um objetivo..."
+                onChange={(text) => updateGoal(g.id, text)}
+                onDelete={() => setPendingDelete({ kind: "goal", id: g.id })}
+              />
+            ))}
+          </SortableList>
         </CardContent>
       </Card>
 
@@ -110,26 +105,25 @@ export function NotesPage() {
           {tasks.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma tarefa adicionada.</p>
           )}
-          {tasks.map((t, idx) => (
-            <EditableCard
-              key={t.id}
-              text={t.text}
-              placeholder="Descreva uma tarefa..."
-              leading={
-                <Checkbox
-                  checked={t.done}
-                  onCheckedChange={(v) => updateTask(t.id, { done: Boolean(v) })}
-                />
-              }
-              textClassName={t.done ? "line-through text-muted-foreground" : ""}
-              canMoveUp={idx > 0}
-              canMoveDown={idx < tasks.length - 1}
-              onChange={(text) => updateTask(t.id, { text })}
-              onDelete={() => setPendingDelete({ kind: "task", id: t.id })}
-              onMoveUp={() => reorderTasks(idx, -1)}
-              onMoveDown={() => reorderTasks(idx, 1)}
-            />
-          ))}
+          <SortableList items={tasks} onReorder={setTasks}>
+            {tasks.map((t) => (
+              <EditableCard
+                key={t.id}
+                id={t.id}
+                text={t.text}
+                placeholder="Descreva uma tarefa..."
+                leading={
+                  <Checkbox
+                    checked={t.done}
+                    onCheckedChange={(v) => updateTask(t.id, { done: Boolean(v) })}
+                  />
+                }
+                textClassName={t.done ? "line-through text-muted-foreground" : ""}
+                onChange={(text) => updateTask(t.id, { text })}
+                onDelete={() => setPendingDelete({ kind: "task", id: t.id })}
+              />
+            ))}
+          </SortableList>
         </CardContent>
       </Card>
 
@@ -144,20 +138,19 @@ export function NotesPage() {
           {notes.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma anotação adicionada.</p>
           )}
-          {notes.map((n, idx) => (
-            <EditableCard
-              key={n.id}
-              text={n.text}
-              placeholder="Escreva uma anotação..."
-              multiline
-              canMoveUp={idx > 0}
-              canMoveDown={idx < notes.length - 1}
-              onChange={(text) => updateNote(n.id, text)}
-              onDelete={() => setPendingDelete({ kind: "note", id: n.id })}
-              onMoveUp={() => reorderNotes(idx, -1)}
-              onMoveDown={() => reorderNotes(idx, 1)}
-            />
-          ))}
+          <SortableList items={notes} onReorder={setNotes}>
+            {notes.map((n) => (
+              <EditableCard
+                key={n.id}
+                id={n.id}
+                text={n.text}
+                placeholder="Escreva uma anotação..."
+                multiline
+                onChange={(text) => updateNote(n.id, text)}
+                onDelete={() => setPendingDelete({ kind: "note", id: n.id })}
+              />
+            ))}
+          </SortableList>
         </CardContent>
       </Card>
 
@@ -165,7 +158,7 @@ export function NotesPage() {
         open={pendingDelete !== null}
         onOpenChange={(v) => { if (!v) setPendingDelete(null); }}
         onConfirm={confirmDelete}
-        description={descriptionFor(pendingDelete)}
+        description={deleteDescription()}
       />
     </div>
   );

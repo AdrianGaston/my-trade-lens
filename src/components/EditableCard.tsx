@@ -2,39 +2,57 @@ import { ReactNode, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowDown, ArrowUp, Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, Pencil, Trash2, X } from "lucide-react";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type EditableCardProps = {
+  id: string;
   text: string;
   prefix?: ReactNode;
   leading?: ReactNode;
   placeholder?: string;
   multiline?: boolean;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
   onChange: (text: string) => void;
   onDelete: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
   textClassName?: string;
 };
 
 export function EditableCard({
+  id,
   text,
   prefix,
   leading,
   placeholder = "Escreva aqui...",
   multiline = false,
-  canMoveUp,
-  canMoveDown,
   onChange,
   onDelete,
-  onMoveUp,
-  onMoveDown,
   textClassName,
 }: EditableCardProps) {
   const [editing, setEditing] = useState(text === "");
   const [draft, setDraft] = useState(text);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id, disabled: editing });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
 
   const startEdit = () => {
     setDraft(text);
@@ -50,96 +68,99 @@ export function EditableCard({
   };
 
   return (
-    <Card className="group relative p-3 flex items-center gap-2">
-      {prefix}
-      {leading}
-      <div className="flex-1 min-w-0">
-        {editing ? (
-          multiline ? (
-            <textarea
-              autoFocus
-              value={draft}
-              placeholder={placeholder}
-              onChange={(e) => setDraft(e.target.value)}
-              className="w-full min-h-[60px] bg-transparent border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+    <div ref={setNodeRef} style={style}>
+      <Card className="p-3 flex items-center gap-2">
+        {prefix}
+        {leading}
+        <div
+          className={`flex-1 min-w-0 ${editing ? "" : "cursor-grab active:cursor-grabbing"}`}
+          {...(editing ? {} : { ...attributes, ...listeners })}
+        >
+          {editing ? (
+            multiline ? (
+              <textarea
+                autoFocus
+                value={draft}
+                placeholder={placeholder}
+                onChange={(e) => setDraft(e.target.value)}
+                className="w-full min-h-[60px] bg-transparent border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            ) : (
+              <Input
+                autoFocus
+                value={draft}
+                placeholder={placeholder}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") save();
+                  if (e.key === "Escape") cancel();
+                }}
+              />
+            )
           ) : (
-            <Input
-              autoFocus
-              value={draft}
-              placeholder={placeholder}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") save();
-                if (e.key === "Escape") cancel();
-              }}
-            />
-          )
-        ) : (
-          <p
-            className={`text-sm whitespace-pre-wrap break-words ${
-              text ? "" : "text-muted-foreground italic"
-            } ${textClassName ?? ""}`}
-          >
-            {text || placeholder}
-          </p>
-        )}
-      </div>
+            <p
+              className={`text-sm whitespace-pre-wrap break-words select-none ${
+                text ? "" : "text-muted-foreground italic"
+              } ${textClassName ?? ""}`}
+            >
+              {text || placeholder}
+            </p>
+          )}
+        </div>
 
-      <div className="flex items-center gap-1">
-        {editing ? (
-          <>
-            <Button size="icon" variant="ghost" onClick={save} aria-label="Salvar">
-              <Check className="h-4 w-4" />
+        <div className="flex items-center gap-1">
+          {editing ? (
+            <>
+              <Button size="icon" variant="ghost" onClick={save} aria-label="Salvar">
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" onClick={cancel} aria-label="Cancelar">
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <Button size="icon" variant="ghost" onClick={startEdit} aria-label="Editar">
+              <Pencil className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={cancel} aria-label="Cancelar">
-              <X className="h-4 w-4" />
-            </Button>
-          </>
-        ) : (
-          <Button size="icon" variant="ghost" onClick={startEdit} aria-label="Editar">
-            <Pencil className="h-4 w-4" />
+          )}
+          <Button size="icon" variant="ghost" onClick={onDelete} aria-label="Remover">
+            <Trash2 className="h-4 w-4" />
           </Button>
-        )}
-        <Button size="icon" variant="ghost" onClick={onDelete} aria-label="Remover">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex-col gap-1 hidden group-hover:flex">
-        <Button
-          size="icon"
-          variant="outline"
-          className="h-6 w-6"
-          disabled={!canMoveUp}
-          onClick={onMoveUp}
-          aria-label="Mover para cima"
-        >
-          <ArrowUp className="h-3 w-3" />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          className="h-6 w-6"
-          disabled={!canMoveDown}
-          onClick={onMoveDown}
-          aria-label="Mover para baixo"
-        >
-          <ArrowDown className="h-3 w-3" />
-        </Button>
-      </div>
-    </Card>
+        </div>
+      </Card>
+    </div>
   );
 }
 
-export function useReorder<T>(setItems: React.Dispatch<React.SetStateAction<T[]>>) {
-  return (index: number, direction: -1 | 1) => {
-    setItems((items) => {
-      const target = index + direction;
-      if (target < 0 || target >= items.length) return items;
-      const next = [...items];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+type SortableListProps<T extends { id: string }> = {
+  items: T[];
+  onReorder: (items: T[]) => void;
+  children: ReactNode;
+};
+
+export function SortableList<T extends { id: string }>({
+  items,
+  onReorder,
+  children,
+}: SortableListProps<T>) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    onReorder(arrayMove(items, oldIndex, newIndex));
   };
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+        {children}
+      </SortableContext>
+    </DndContext>
+  );
 }

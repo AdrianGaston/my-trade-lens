@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { EditableCard, useReorder } from "@/components/EditableCard";
+import { EditableCard, SortableList } from "@/components/EditableCard";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type Rule = { id: string; text: string };
@@ -27,7 +27,6 @@ const rulesRepo = {
 export function TradingPlanPage() {
   const [rules, setRules] = useState<Rule[]>(() => rulesRepo.load());
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const reorder = useReorder(setRules);
 
   useEffect(() => {
     rulesRepo.save(rules);
@@ -54,22 +53,21 @@ export function TradingPlanPage() {
           {rules.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma regra adicionada.</p>
           )}
-          {rules.map((rule, idx) => (
-            <EditableCard
-              key={rule.id}
-              text={rule.text}
-              prefix={
-                <span className="text-sm text-muted-foreground w-6 text-right">{idx + 1}.</span>
-              }
-              placeholder="Escreva uma regra do seu plano..."
-              canMoveUp={idx > 0}
-              canMoveDown={idx < rules.length - 1}
-              onChange={(text) => updateRule(rule.id, text)}
-              onDelete={() => setConfirmDeleteId(rule.id)}
-              onMoveUp={() => reorder(idx, -1)}
-              onMoveDown={() => reorder(idx, 1)}
-            />
-          ))}
+          <SortableList items={rules} onReorder={setRules}>
+            {rules.map((rule, idx) => (
+              <EditableCard
+                key={rule.id}
+                id={rule.id}
+                text={rule.text}
+                prefix={
+                  <span className="text-sm text-muted-foreground w-6 text-right">{idx + 1}.</span>
+                }
+                placeholder="Escreva uma regra do seu plano..."
+                onChange={(text) => updateRule(rule.id, text)}
+                onDelete={() => setConfirmDeleteId(rule.id)}
+              />
+            ))}
+          </SortableList>
         </CardContent>
       </Card>
 
