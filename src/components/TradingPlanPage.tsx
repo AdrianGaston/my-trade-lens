@@ -1,25 +1,15 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Plus } from "lucide-react";
+import { EditableCard, useReorder } from "@/components/EditableCard";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 
 type Rule = { id: string; text: string };
 
 const STORAGE_KEY = "tradingPlan.rules";
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-// Repositório abstrato — facilita troca futura por Supabase
 const rulesRepo = {
   load(): Rule[] {
     try {
@@ -37,6 +27,7 @@ const rulesRepo = {
 export function TradingPlanPage() {
   const [rules, setRules] = useState<Rule[]>(() => rulesRepo.load());
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const reorder = useReorder(setRules);
 
   useEffect(() => {
     rulesRepo.save(rules);
@@ -64,43 +55,29 @@ export function TradingPlanPage() {
             <p className="text-sm text-muted-foreground">Nenhuma regra adicionada.</p>
           )}
           {rules.map((rule, idx) => (
-            <div key={rule.id} className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground w-6 text-right">{idx + 1}.</span>
-              <Input
-                value={rule.text}
-                placeholder="Escreva uma regra do seu plano..."
-                onChange={(e) => updateRule(rule.id, e.target.value)}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => setConfirmDeleteId(rule.id)}
-                aria-label="Remover"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+            <EditableCard
+              key={rule.id}
+              text={rule.text}
+              prefix={
+                <span className="text-sm text-muted-foreground w-6 text-right">{idx + 1}.</span>
+              }
+              placeholder="Escreva uma regra do seu plano..."
+              canMoveUp={idx > 0}
+              canMoveDown={idx < rules.length - 1}
+              onChange={(text) => updateRule(rule.id, text)}
+              onDelete={() => setConfirmDeleteId(rule.id)}
+              onMoveUp={() => reorder(idx, -1)}
+              onMoveDown={() => reorder(idx, 1)}
+            />
           ))}
         </CardContent>
       </Card>
 
-      <AlertDialog
+      <ConfirmDeleteDialog
         open={confirmDeleteId !== null}
         onOpenChange={(v) => { if (!v) setConfirmDeleteId(null); }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir item</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Confirmar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }
