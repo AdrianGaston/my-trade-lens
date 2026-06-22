@@ -37,8 +37,8 @@ const menuItems: { id: TabId; label: string; icon: React.ComponentType<{ classNa
   { id: "gerenciamento", label: "Gerenciamento", icon: Settings },
   { id: "calendario", label: "Calendário", icon: CalendarDays },
   { id: "anotacoes", label: "Anotações", icon: StickyNote },
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "configuracoes", label: "Configurações", icon: Cog },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
