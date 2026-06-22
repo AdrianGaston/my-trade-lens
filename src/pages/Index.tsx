@@ -8,6 +8,7 @@ import { CalendarPage } from "@/components/CalendarPage";
 import { DashboardPage } from "@/components/DashboardPage";
 import { NotesPage } from "@/components/NotesPage";
 import { TradingPlanPage } from "@/components/TradingPlanPage";
+import { SettingsPage } from "@/components/SettingsPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -123,6 +124,9 @@ const Index = () => {
     }
     if (activeTab === "trading-plan") {
       return <TradingPlanPage />;
+    }
+    if (activeTab === "configuracoes") {
+      return <SettingsPage />;
     }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
