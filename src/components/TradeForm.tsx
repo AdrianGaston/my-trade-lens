@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ASSETS, SETUPS, TRENDS, SENTIMENTS, ERRORS, type Trade } from "@/types/trade";
+import { TRENDS, type Trade } from "@/types/trade";
+import { useTextList } from "@/hooks/use-list";
+import { CATALOG_DEFAULTS, CATALOG_STORAGE, orderForDropdown } from "@/lib/catalogs";
 import { toast } from "@/hooks/use-toast";
 
 interface TradeFormProps {
@@ -35,6 +37,16 @@ const emptyForm = {
 
 export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTitle }: TradeFormProps) {
   const [form, setForm] = useState(emptyForm);
+
+  const { items: assetsItems } = useTextList(CATALOG_STORAGE.assets, CATALOG_DEFAULTS.assets);
+  const { items: setupsItems } = useTextList(CATALOG_STORAGE.setups, CATALOG_DEFAULTS.setups);
+  const { items: errorsItems } = useTextList(CATALOG_STORAGE.errors, CATALOG_DEFAULTS.errors);
+  const { items: sentimentsItems } = useTextList(CATALOG_STORAGE.sentiments, CATALOG_DEFAULTS.sentiments);
+
+  const ASSETS_LIST = orderForDropdown("assets", assetsItems.map((i) => i.text));
+  const SETUPS_LIST = orderForDropdown("setups", setupsItems.map((i) => i.text));
+  const ERRORS_LIST = orderForDropdown("errors", errorsItems.map((i) => i.text));
+  const SENTIMENTS_LIST = orderForDropdown("sentiments", sentimentsItems.map((i) => i.text));
 
   useEffect(() => {
     if (editingTrade) {
@@ -122,15 +134,15 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
             </PopoverContent>
           </Popover>
         )}
-        {field("Ativo *", sel("Selecionar", form.asset, (v) => setForm({ ...form, asset: v }), ASSETS))}
+        {field("Ativo *", sel("Selecionar", form.asset, (v) => setForm({ ...form, asset: v }), ASSETS_LIST))}
         {field("Tipo *", sel("Selecionar", form.type, (v) => setForm({ ...form, type: v as "Buy" | "Sell" }), ["Buy", "Sell"]))}
         {field("Volume",
           <Input type="number" step="0.01" placeholder="0.00" value={form.volume} onChange={(e) => setForm({ ...form, volume: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
         )}
-        {field("Setup", sel("Selecionar", form.setup, (v) => setForm({ ...form, setup: v }), SETUPS))}
+        {field("Setup", sel("Selecionar", form.setup, (v) => setForm({ ...form, setup: v }), SETUPS_LIST))}
         {field("Tendência", sel("Selecionar", form.trend, (v) => setForm({ ...form, trend: v }), TRENDS))}
-        {field("Erro", sel("Selecionar", form.error, (v) => setForm({ ...form, error: v }), ERRORS))}
-        {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS))}
+        {field("Erro", sel("Selecionar", form.error, (v) => setForm({ ...form, error: v }), ERRORS_LIST))}
+        {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS_LIST))}
         {field("Pontos",
           <Input type="number" step="0.01" placeholder="0.00" value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
         )}

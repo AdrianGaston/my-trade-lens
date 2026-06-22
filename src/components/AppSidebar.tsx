@@ -7,6 +7,7 @@ import {
   CalendarDays,
   StickyNote,
   LayoutDashboard,
+  Cog,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,7 +23,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export type TabId = "home" | "trading-plan" | "checklist" | "gerenciamento" | "calendario" | "anotacoes" | "dashboard";
+export type TabId = "home" | "trading-plan" | "checklist" | "gerenciamento" | "calendario" | "anotacoes" | "dashboard" | "configuracoes";
 
 interface AppSidebarProps {
   activeTab: TabId;
@@ -37,6 +38,7 @@ const menuItems: { id: TabId; label: string; icon: React.ComponentType<{ classNa
   { id: "calendario", label: "Calendário", icon: CalendarDays },
   { id: "anotacoes", label: "Anotações", icon: StickyNote },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "configuracoes", label: "Configurações", icon: Cog },
 ];
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
