@@ -9,6 +9,7 @@ import { DashboardPage } from "@/components/DashboardPage";
 import { NotesPage } from "@/components/NotesPage";
 import { TradingPlanPage } from "@/components/TradingPlanPage";
 import { SettingsPage } from "@/components/SettingsPage";
+import { ChecklistPage } from "@/components/ChecklistPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -88,7 +89,6 @@ const Index = () => {
     setMonthCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
   const placeholders: Record<string, string> = {
-    checklist: "CheckList",
     gerenciamento: "Gerenciamento",
   };
 
@@ -127,6 +127,9 @@ const Index = () => {
     }
     if (activeTab === "configuracoes") {
       return <SettingsPage />;
+    }
+    if (activeTab === "checklist") {
+      return <ChecklistPage />;
     }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
