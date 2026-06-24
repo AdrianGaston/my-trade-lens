@@ -1,36 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { EditableCard, SortableList } from "@/components/EditableCard";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { usePersistentState } from "@/hooks/use-persistent-state";
+import { uid } from "@/lib/listRepo";
 
 type Rule = { id: string; text: string };
 
 const STORAGE_KEY = "tradingPlan.rules";
-const uid = () => Math.random().toString(36).slice(2, 10);
-
-const rulesRepo = {
-  load(): Rule[] {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as Rule[]) : [];
-    } catch {
-      return [];
-    }
-  },
-  save(rules: Rule[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(rules));
-  },
-};
 
 export function TradingPlanPage() {
-  const [rules, setRules] = useState<Rule[]>(() => rulesRepo.load());
+  const [rules, setRules] = usePersistentState<Rule[]>(STORAGE_KEY, []);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    rulesRepo.save(rules);
-  }, [rules]);
 
   const addRule = () => setRules((r) => [...r, { id: uid(), text: "" }]);
   const updateRule = (id: string, text: string) =>
