@@ -10,6 +10,7 @@ import { NotesPage } from "@/components/NotesPage";
 import { TradingPlanPage } from "@/components/TradingPlanPage";
 import { SettingsPage } from "@/components/SettingsPage";
 import { ChecklistPage } from "@/components/ChecklistPage";
+import { GerenciamentoPage } from "@/components/GerenciamentoPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -88,9 +89,7 @@ const Index = () => {
   const shiftMonth = (delta: number) =>
     setMonthCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
-  const placeholders: Record<string, string> = {
-    gerenciamento: "Gerenciamento",
-  };
+  const placeholders: Record<string, string> = {};
 
   const renderContent = () => {
     if (activeTab === "home") {
@@ -130,6 +129,9 @@ const Index = () => {
     }
     if (activeTab === "checklist") {
       return <ChecklistPage />;
+    }
+    if (activeTab === "gerenciamento") {
+      return <GerenciamentoPage />;
     }
     return <PlaceholderPage title={placeholders[activeTab] || activeTab} />;
   };
