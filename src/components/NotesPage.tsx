@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { EditableCard, SortableList } from "@/components/EditableCard";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { usePersistentState } from "@/hooks/use-persistent-state";
+import { uid } from "@/lib/listRepo";
 
 type TextItem = { id: string; text: string };
 type TaskItem = { id: string; text: string; done: boolean };
@@ -15,28 +17,13 @@ const KEYS = {
   notes: "notes.generalNotes",
 } as const;
 
-function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-const uid = () => Math.random().toString(36).slice(2, 10);
-
 type DeleteTarget = { kind: "goal" | "task" | "note"; id: string } | null;
 
 export function NotesPage() {
-  const [goals, setGoals] = useState<TextItem[]>(() => load(KEYS.goals, []));
-  const [tasks, setTasks] = useState<TaskItem[]>(() => load(KEYS.tasks, []));
-  const [notes, setNotes] = useState<TextItem[]>(() => load(KEYS.notes, []));
+  const [goals, setGoals] = usePersistentState<TextItem[]>(KEYS.goals, []);
+  const [tasks, setTasks] = usePersistentState<TaskItem[]>(KEYS.tasks, []);
+  const [notes, setNotes] = usePersistentState<TextItem[]>(KEYS.notes, []);
   const [pendingDelete, setPendingDelete] = useState<DeleteTarget>(null);
-
-  useEffect(() => localStorage.setItem(KEYS.goals, JSON.stringify(goals)), [goals]);
-  useEffect(() => localStorage.setItem(KEYS.tasks, JSON.stringify(tasks)), [tasks]);
-  useEffect(() => localStorage.setItem(KEYS.notes, JSON.stringify(notes)), [notes]);
 
   const addGoal = () => setGoals((g) => [...g, { id: uid(), text: "" }]);
   const updateGoal = (id: string, text: string) =>
