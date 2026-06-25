@@ -1,22 +1,35 @@
-// Image storage abstraction.
-// Today: in-memory/base64 data URL. Tomorrow: Supabase Storage URL.
-// Keep all read/write paths going through this module so the swap is local.
+// Supabase Storage-backed image uploader.
+// Files go to the public "images" bucket under {folder}/{uuid}-{name}.
+import { supabase } from "@/lib/supabase";
+
+const BUCKET = "images";
 
 export interface ImageStorage {
-  upload(file: File): Promise<string>; // returns a referencable URL/data-URL
+  upload(file: File, folder?: string): Promise<string>;
   remove?(ref: string): Promise<void>;
 }
 
-export const base64ImageStorage: ImageStorage = {
-  upload(file: File) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
+function sanitize(name: string) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+export const imageStorage: ImageStorage = {
+  async upload(file: File, folder = "misc") {
+    const path = `${folder}/${crypto.randomUUID()}-${sanitize(file.name)}`;
+    const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type,
     });
+    if (error) throw error;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  },
+  async remove(ref: string) {
+    const marker = `/object/public/${BUCKET}/`;
+    const idx = ref.indexOf(marker);
+    if (idx === -1) return;
+    const path = ref.slice(idx + marker.length);
+    await supabase.storage.from(BUCKET).remove([path]);
   },
 };
-
-// Default export – swap implementation later (e.g. supabaseImageStorage).
-export const imageStorage: ImageStorage = base64ImageStorage;
