@@ -1,26 +1,62 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { EditableCard, SortableList } from "@/components/EditableCard";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
-import { usePersistentState } from "@/hooks/use-persistent-state";
-import { uid } from "@/lib/listRepo";
+import { tradingPlanRepo, type TradingPlanRow } from "@/lib/repos/tradingPlanRepo";
+import { toast } from "@/hooks/use-toast";
 
 type Rule = { id: string; text: string };
 
-const STORAGE_KEY = "tradingPlan.rules";
+const toRule = (r: TradingPlanRow): Rule => ({ id: r.id, text: r.content });
 
 export function TradingPlanPage() {
-  const [rules, setRules] = usePersistentState<Rule[]>(STORAGE_KEY, []);
+  const [rules, setRules] = useState<Rule[]>([]);
+  const [loading, setLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const addRule = () => setRules((r) => [...r, { id: uid(), text: "" }]);
-  const updateRule = (id: string, text: string) =>
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      setRules((await tradingPlanRepo.list()).map(toRule));
+    } catch (e) {
+      toast({ title: "Erro ao carregar", description: String(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const addRule = async () => {
+    try {
+      const row = await tradingPlanRepo.create("", rules.length);
+      setRules((r) => [...r, toRule(row)]);
+    } catch (e) {
+      toast({ title: "Erro ao adicionar", description: String(e), variant: "destructive" });
+    }
+  };
+
+  const updateRule = (id: string, text: string) => {
     setRules((r) => r.map((i) => (i.id === id ? { ...i, text } : i)));
-  const confirmDelete = () => {
-    if (confirmDeleteId) setRules((r) => r.filter((i) => i.id !== confirmDeleteId));
+    void tradingPlanRepo.update(id, text);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    const id = confirmDeleteId;
     setConfirmDeleteId(null);
+    setRules((r) => r.filter((i) => i.id !== id));
+    try { await tradingPlanRepo.remove(id); } catch (e) {
+      toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" });
+      void load();
+    }
+  };
+
+  const handleReorder = (next: Rule[]) => {
+    setRules(next);
+    void tradingPlanRepo.reorder(next.map((i) => i.id));
   };
 
   return (
@@ -33,10 +69,11 @@ export function TradingPlanPage() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-2">
-          {rules.length === 0 && (
+          {loading && <p className="text-sm text-muted-foreground">Carregando...</p>}
+          {!loading && rules.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhuma regra adicionada.</p>
           )}
-          <SortableList items={rules} onReorder={setRules}>
+          <SortableList items={rules} onReorder={handleReorder}>
             {rules.map((rule, idx) => (
               <EditableCard
                 key={rule.id}

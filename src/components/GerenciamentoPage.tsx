@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,8 +21,7 @@ import { ImageLightbox } from "@/components/ImageLightbox";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { SortableList } from "@/components/EditableCard";
 import { Plus, Trash2 } from "lucide-react";
-import { uid } from "@/lib/listRepo";
-import { usePersistentState } from "@/hooks/use-persistent-state";
+import { managementRepo, type ManagementRow } from "@/lib/repos/managementRepo";
 import { toast } from "@/hooks/use-toast";
 
 type GerenciamentoItem = {
@@ -32,31 +31,77 @@ type GerenciamentoItem = {
   image?: string;
 };
 
-const STORAGE_KEY = "gerenciamento.items";
+const toItem = (r: ManagementRow): GerenciamentoItem => ({
+  id: r.id,
+  title: r.title,
+  bullets: r.items ?? [],
+  image: r.image_url ?? undefined,
+});
 
 export function GerenciamentoPage() {
-  const [items, setItems] = usePersistentState<GerenciamentoItem[]>(STORAGE_KEY, []);
+  const [items, setItems] = useState<GerenciamentoItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<GerenciamentoItem | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const rows = await managementRepo.list();
+      setItems(rows.map(toItem));
+    } catch (e) {
+      toast({ title: "Erro ao carregar", description: String(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
   const openCreate = () => { setEditing(null); setFormOpen(true); };
   const openEdit = (item: GerenciamentoItem) => { setEditing(item); setFormOpen(true); };
 
-  const handleSave = (data: Omit<GerenciamentoItem, "id">) => {
-    if (editing) {
-      setItems((prev) => prev.map((i) => (i.id === editing.id ? { ...i, ...data } : i)));
-    } else {
-      setItems((prev) => [...prev, { id: uid(), ...data }]);
+  const handleSave = async (data: Omit<GerenciamentoItem, "id">) => {
+    try {
+      if (editing) {
+        await managementRepo.update(editing.id, {
+          title: data.title,
+          items: data.bullets,
+          image_url: data.image ?? null,
+        });
+        setItems((prev) => prev.map((i) => (i.id === editing.id ? { ...i, ...data } : i)));
+      } else {
+        const row = await managementRepo.create(
+          { title: data.title, items: data.bullets, image_url: data.image ?? null },
+          items.length,
+        );
+        setItems((prev) => [...prev, toItem(row)]);
+      }
+      setFormOpen(false);
+      setEditing(null);
+    } catch (e) {
+      toast({ title: "Erro ao salvar", description: String(e), variant: "destructive" });
     }
-    setFormOpen(false);
-    setEditing(null);
   };
 
-  const confirmDelete = () => {
-    if (confirmDeleteId) setItems((prev) => prev.filter((i) => i.id !== confirmDeleteId));
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    const id = confirmDeleteId;
     setConfirmDeleteId(null);
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await managementRepo.remove(id);
+    } catch (e) {
+      toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" });
+      void load();
+    }
+  };
+
+  const handleReorder = (next: GerenciamentoItem[]) => {
+    setItems(next);
+    void managementRepo.reorder(next.map((i) => i.id));
   };
 
   return (
@@ -69,10 +114,11 @@ export function GerenciamentoPage() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {items.length === 0 && (
+          {loading && <p className="text-sm text-muted-foreground">Carregando...</p>}
+          {!loading && items.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhum gerenciamento cadastrado.</p>
           )}
-          <SortableList items={items} onReorder={setItems}>
+          <SortableList items={items} onReorder={handleReorder}>
             <div className="grid gap-3 md:grid-cols-2">
               {items.map((item) => (
                 <MediaCard
@@ -203,6 +249,7 @@ function GerenciamentoFormDialog({ open, onOpenChange, initial, onSave }: FormPr
           <ImageUploadField
             id="gr-image"
             value={image}
+            folder="management"
             onChange={setImage}
             onUploadingChange={setUploading}
           />

@@ -1,17 +1,19 @@
-import { ASSETS, SETUPS, SENTIMENTS, ERRORS } from "@/types/trade";
+import { ERRORS, SENTIMENTS } from "@/types/trade";
 
 export type CatalogKey = "assets" | "setups" | "errors" | "sentiments";
 
+// Storage key now equals the Supabase table name (back-compat alias kept).
 export const CATALOG_STORAGE: Record<CatalogKey, string> = {
-  assets: "catalog.assets",
-  setups: "catalog.setups",
-  errors: "catalog.errors",
-  sentiments: "catalog.sentiments",
+  assets: "assets",
+  setups: "setups",
+  errors: "errors",
+  sentiments: "sentiments",
 };
 
+// Initial values are now seeded in the database migration; kept for tests/UI hints.
 export const CATALOG_DEFAULTS: Record<CatalogKey, string[]> = {
-  assets: [...ASSETS],
-  setups: [...SETUPS],
+  assets: [],
+  setups: [],
   errors: [...ERRORS],
   sentiments: [...SENTIMENTS],
 };
@@ -24,10 +26,10 @@ export const CATALOG_LABELS: Record<CatalogKey, string> = {
 };
 
 /**
- * Apply dropdown ordering rules:
+ * Dropdown ordering rules:
  *  - errors: "Nenhum" first, then alphabetical
  *  - sentiments: "Neutro" first, then alphabetical
- *  - others: preserved order from storage (user-defined via drag-and-drop)
+ *  - others: preserve order from storage (user-defined via drag-and-drop)
  */
 export function orderForDropdown(key: CatalogKey, items: string[]): string[] {
   const cleaned = items.map((s) => s.trim()).filter(Boolean);
