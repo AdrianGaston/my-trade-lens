@@ -15,6 +15,9 @@ import {
 import type { Trade } from "@/types/trade";
 import { ASSETS, SETUPS } from "@/types/trade";
 import { StatsCards } from "./StatsCards";
+import { GoalsCard } from "./GoalsCard";
+import { DisciplineScoreCard } from "./DisciplineScoreCard";
+import { InsightsCard } from "./InsightsCard";
 
 type Period = "today" | "week" | "month" | "year" | "custom";
 type PieLabelProps = {
@@ -295,6 +298,17 @@ export function DashboardPage({ trades }: Props) {
 
       {/* Stats */}
       <StatsCards stats={stats} />
+
+      {/* Metas + Score */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2"><GoalsCard trades={trades} /></div>
+        <DisciplineScoreCard trades={trades} />
+      </div>
+
+      {/* Insights */}
+      <InsightsCard trades={trades} />
+
+
 
       {/* Evolução Anual - full width */}
       <Card className="bg-card border-border">
