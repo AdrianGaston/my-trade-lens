@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -22,8 +22,7 @@ import { ImageLightbox } from "@/components/ImageLightbox";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { SortableList } from "@/components/EditableCard";
 import { Plus } from "lucide-react";
-import { uid } from "@/lib/listRepo";
-import { usePersistentState } from "@/hooks/use-persistent-state";
+import { checklistRepo, type ChecklistRow } from "@/lib/repos/checklistRepo";
 import { toast } from "@/hooks/use-toast";
 
 type ChecklistItem = {
@@ -33,31 +32,77 @@ type ChecklistItem = {
   image?: string;
 };
 
-const STORAGE_KEY = "checklist.items";
+const toItem = (r: ChecklistRow): ChecklistItem => ({
+  id: r.id,
+  title: r.title,
+  description: r.description ?? "",
+  image: r.image_url ?? undefined,
+});
 
 export function ChecklistPage() {
-  const [items, setItems] = usePersistentState<ChecklistItem[]>(STORAGE_KEY, []);
+  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ChecklistItem | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const rows = await checklistRepo.list();
+      setItems(rows.map(toItem));
+    } catch (e) {
+      toast({ title: "Erro ao carregar checklist", description: String(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
   const openCreate = () => { setEditing(null); setFormOpen(true); };
   const openEdit = (item: ChecklistItem) => { setEditing(item); setFormOpen(true); };
 
-  const handleSave = (data: Omit<ChecklistItem, "id">) => {
-    if (editing) {
-      setItems((prev) => prev.map((i) => (i.id === editing.id ? { ...i, ...data } : i)));
-    } else {
-      setItems((prev) => [...prev, { id: uid(), ...data }]);
+  const handleSave = async (data: Omit<ChecklistItem, "id">) => {
+    try {
+      if (editing) {
+        await checklistRepo.update(editing.id, {
+          title: data.title,
+          description: data.description,
+          image_url: data.image ?? null,
+        });
+        setItems((prev) => prev.map((i) => (i.id === editing.id ? { ...i, ...data } : i)));
+      } else {
+        const row = await checklistRepo.create(
+          { title: data.title, description: data.description, image_url: data.image ?? null },
+          items.length,
+        );
+        setItems((prev) => [...prev, toItem(row)]);
+      }
+      setFormOpen(false);
+      setEditing(null);
+    } catch (e) {
+      toast({ title: "Erro ao salvar", description: String(e), variant: "destructive" });
     }
-    setFormOpen(false);
-    setEditing(null);
   };
 
-  const confirmDelete = () => {
-    if (confirmDeleteId) setItems((prev) => prev.filter((i) => i.id !== confirmDeleteId));
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    const id = confirmDeleteId;
     setConfirmDeleteId(null);
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await checklistRepo.remove(id);
+    } catch (e) {
+      toast({ title: "Erro ao excluir", description: String(e), variant: "destructive" });
+      void load();
+    }
+  };
+
+  const handleReorder = (next: ChecklistItem[]) => {
+    setItems(next);
+    void checklistRepo.reorder(next.map((i) => i.id));
   };
 
   return (
@@ -70,10 +115,11 @@ export function ChecklistPage() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {items.length === 0 && (
+          {loading && <p className="text-sm text-muted-foreground">Carregando...</p>}
+          {!loading && items.length === 0 && (
             <p className="text-sm text-muted-foreground">Nenhum checklist cadastrado.</p>
           )}
-          <SortableList items={items} onReorder={setItems}>
+          <SortableList items={items} onReorder={handleReorder}>
             <div className="grid gap-3 md:grid-cols-2">
               {items.map((item) => (
                 <MediaCard
@@ -175,6 +221,7 @@ function ChecklistFormDialog({ open, onOpenChange, initial, onSave }: FormProps)
           <ImageUploadField
             id="cl-image"
             value={image}
+            folder="checklists"
             onChange={setImage}
             onUploadingChange={setUploading}
           />

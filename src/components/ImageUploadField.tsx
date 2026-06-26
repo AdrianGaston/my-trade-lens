@@ -10,6 +10,7 @@ type Props = {
   id?: string;
   label?: string;
   value: string | undefined;
+  folder?: string;
   onChange: (value: string | undefined) => void;
   onUploadingChange?: (uploading: boolean) => void;
 };
@@ -18,6 +19,7 @@ export function ImageUploadField({
   id = "image-upload",
   label = "Imagem (opcional)",
   value,
+  folder,
   onChange,
   onUploadingChange,
 }: Props) {
@@ -28,10 +30,14 @@ export function ImageUploadField({
     try {
       setUploading(true);
       onUploadingChange?.(true);
-      const ref = await imageStorage.upload(file);
+      const ref = await imageStorage.upload(file, folder);
       onChange(ref);
-    } catch {
-      toast({ title: "Erro ao carregar imagem", variant: "destructive" });
+    } catch (e) {
+      toast({
+        title: "Erro ao carregar imagem",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
       onUploadingChange?.(false);
