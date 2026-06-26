@@ -15,6 +15,9 @@ import {
 import type { Trade } from "@/types/trade";
 import { ASSETS, SETUPS } from "@/types/trade";
 import { StatsCards } from "./StatsCards";
+import { GoalsCard } from "./GoalsCard";
+import { DisciplineScoreCard } from "./DisciplineScoreCard";
+import { InsightsCard } from "./InsightsCard";
 
 type Period = "today" | "week" | "month" | "year" | "custom";
 type PieLabelProps = {
