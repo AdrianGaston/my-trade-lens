@@ -8,10 +8,10 @@ export interface Insight {
 
 const WEEKDAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
-const tallyMax = <K extends string>(entries: Array<[K, number]>): [K, number] | null => {
+function tallyMax<K extends string | number>(entries: Array<[K, number]>): [K, number] | null {
   if (entries.length === 0) return null;
   return entries.reduce((best, e) => (e[1] > best[1] ? e : best));
-};
+}
 
 export function buildInsights(trades: Trade[]): Insight[] {
   const insights: Insight[] = [];
