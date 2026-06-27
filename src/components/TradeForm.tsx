@@ -166,28 +166,28 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
         )}
         {field("Ativo *", sel("Selecionar", form.asset, (v) => setForm({ ...form, asset: v }), ASSETS_LIST))}
         {field("Tipo *", sel("Selecionar", form.type, (v) => setType(v as "Buy" | "Sell"), ["Buy", "Sell"]))}
-        {field("Volume",
-          <Input type="number" step="0.01" placeholder="0.00" value={form.volume} onChange={(e) => setVolume(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
-        )}
-        {field("Setup", sel("Selecionar", form.setup, (v) => setForm({ ...form, setup: v }), SETUPS_LIST))}
-        {field("Tendência", sel("Selecionar", form.trend, (v) => setForm({ ...form, trend: v }), TRENDS))}
-        {field("Erro", sel("Selecionar", form.error, (v) => setForm({ ...form, error: v }), ERRORS_LIST))}
-        {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS_LIST))}
         {field("Valor de entrada",
           <Input type="number" step="0.01" placeholder="0.00" value={form.entryPrice} onChange={(e) => setEntry(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
         )}
         {field("Valor de saída",
           <Input type="number" step="0.01" placeholder="0.00" value={form.exitPrice} onChange={(e) => setExit(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
         )}
+        {field("Volume",
+          <Input type="number" step="0.01" placeholder="0.00" value={form.volume} onChange={(e) => setVolume(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
+        )}
         {field("Pontos",
           <Input type="number" step="0.01" placeholder="0.00" value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
-        )}
-        {field("Resultado $",
-          <Input type="number" step="0.01" placeholder="0.00" value={form.resultDollar} onChange={(e) => setForm({ ...form, resultDollar: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
         )}
         {field("Mudança %",
           <Input type="number" step="0.01" placeholder="0.00" value={form.changePercent} onChange={(e) => setForm({ ...form, changePercent: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
         )}
+        {field("Resultado $",
+          <Input type="number" step="0.01" placeholder="0.00" value={form.resultDollar} onChange={(e) => setForm({ ...form, resultDollar: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
+        )}
+        {field("Setup", sel("Selecionar", form.setup, (v) => setForm({ ...form, setup: v }), SETUPS_LIST))}
+        {field("Tendência", sel("Selecionar", form.trend, (v) => setForm({ ...form, trend: v }), TRENDS))}
+        {field("Erro", sel("Selecionar", form.error, (v) => setForm({ ...form, error: v }), ERRORS_LIST))}
+        {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS_LIST))}
       </div>
       <div className="flex gap-2 pt-1">
         <Button onClick={handleSave} className="gap-1.5">
