@@ -30,6 +30,8 @@ const emptyForm = {
   trend: "",
   sentiment: "Neutro",
   error: "Nenhum",
+  entryPrice: "",
+  exitPrice: "",
   points: "",
   resultDollar: "",
   changePercent: "",
