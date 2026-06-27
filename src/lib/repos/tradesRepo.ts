@@ -11,6 +11,8 @@ type Row = {
   trend: string | null;
   sentiment: string | null;
   error: string | null;
+  entry_price: number | null;
+  exit_price: number | null;
   points: number | null;
   result: number | null;
   change_pct: number | null;
@@ -26,6 +28,8 @@ const toTrade = (r: Row): Trade => ({
   trend: r.trend ?? "",
   sentiment: r.sentiment ?? "",
   error: r.error ?? "",
+  entryPrice: Number(r.entry_price ?? 0),
+  exitPrice: Number(r.exit_price ?? 0),
   points: Number(r.points ?? 0),
   resultDollar: Number(r.result ?? 0),
   changePercent: Number(r.change_pct ?? 0),
@@ -40,6 +44,8 @@ const toRow = (t: Omit<Trade, "id">) => ({
   trend: t.trend,
   sentiment: t.sentiment,
   error: t.error,
+  entry_price: t.entryPrice,
+  exit_price: t.exitPrice,
   points: t.points,
   result: t.resultDollar,
   change_pct: t.changePercent,
