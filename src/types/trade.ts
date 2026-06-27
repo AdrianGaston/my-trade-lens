@@ -8,6 +8,8 @@ export interface Trade {
   trend: string;
   sentiment: string;
   error: string;
+  entryPrice: number;
+  exitPrice: number;
   points: number;
   resultDollar: number;
   changePercent: number;

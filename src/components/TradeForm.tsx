@@ -30,6 +30,8 @@ const emptyForm = {
   trend: "",
   sentiment: "Neutro",
   error: "Nenhum",
+  entryPrice: "",
+  exitPrice: "",
   points: "",
   resultDollar: "",
   changePercent: "",
@@ -59,6 +61,8 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
         trend: editingTrade.trend,
         sentiment: editingTrade.sentiment,
         error: editingTrade.error,
+        entryPrice: editingTrade.entryPrice ? String(editingTrade.entryPrice) : "",
+        exitPrice: editingTrade.exitPrice ? String(editingTrade.exitPrice) : "",
         points: String(editingTrade.points),
         resultDollar: String(editingTrade.resultDollar),
         changePercent: String(editingTrade.changePercent),
@@ -70,6 +74,30 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
     setForm(emptyForm);
     onCancelEdit?.();
   };
+
+  const recalc = (next: typeof form) => {
+    const entry = parseFloat(next.entryPrice);
+    const exit = parseFloat(next.exitPrice);
+    if (!Number.isFinite(entry) || !Number.isFinite(exit)) return next;
+    const diff = exit - entry;
+    const points = diff;
+    const changePercent = exit !== 0 ? (diff / exit) * 100 : 0;
+    const vol = parseFloat(next.volume) || 1;
+    const signedDiff = next.type === "Sell" ? -diff : diff;
+    const resultDollar = signedDiff * vol;
+    const fmt = (n: number) => (Number.isFinite(n) ? n.toFixed(2) : "");
+    return {
+      ...next,
+      points: fmt(points),
+      changePercent: fmt(changePercent),
+      resultDollar: fmt(resultDollar),
+    };
+  };
+
+  const setEntry = (v: string) => setForm((f) => recalc({ ...f, entryPrice: v }));
+  const setExit = (v: string) => setForm((f) => recalc({ ...f, exitPrice: v }));
+  const setType = (v: "Buy" | "Sell") => setForm((f) => recalc({ ...f, type: v }));
+  const setVolume = (v: string) => setForm((f) => recalc({ ...f, volume: v }));
 
   const handleSave = () => {
     if (!form.date || !form.asset || !form.type) {
@@ -85,6 +113,8 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
       trend: form.trend,
       sentiment: form.sentiment,
       error: form.error,
+      entryPrice: parseFloat(form.entryPrice) || 0,
+      exitPrice: parseFloat(form.exitPrice) || 0,
       points: parseFloat(form.points) || 0,
       resultDollar: parseFloat(form.resultDollar) || 0,
       changePercent: parseFloat(form.changePercent) || 0,
@@ -135,14 +165,20 @@ export function TradeForm({ onSave, onDelete, editingTrade, onCancelEdit, hideTi
           </Popover>
         )}
         {field("Ativo *", sel("Selecionar", form.asset, (v) => setForm({ ...form, asset: v }), ASSETS_LIST))}
-        {field("Tipo *", sel("Selecionar", form.type, (v) => setForm({ ...form, type: v as "Buy" | "Sell" }), ["Buy", "Sell"]))}
+        {field("Tipo *", sel("Selecionar", form.type, (v) => setType(v as "Buy" | "Sell"), ["Buy", "Sell"]))}
         {field("Volume",
-          <Input type="number" step="0.01" placeholder="0.00" value={form.volume} onChange={(e) => setForm({ ...form, volume: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
+          <Input type="number" step="0.01" placeholder="0.00" value={form.volume} onChange={(e) => setVolume(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
         )}
         {field("Setup", sel("Selecionar", form.setup, (v) => setForm({ ...form, setup: v }), SETUPS_LIST))}
         {field("Tendência", sel("Selecionar", form.trend, (v) => setForm({ ...form, trend: v }), TRENDS))}
         {field("Erro", sel("Selecionar", form.error, (v) => setForm({ ...form, error: v }), ERRORS_LIST))}
         {field("Sentimento", sel("Selecionar", form.sentiment, (v) => setForm({ ...form, sentiment: v }), SENTIMENTS_LIST))}
+        {field("Valor de entrada",
+          <Input type="number" step="0.01" placeholder="0.00" value={form.entryPrice} onChange={(e) => setEntry(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
+        )}
+        {field("Valor de saída",
+          <Input type="number" step="0.01" placeholder="0.00" value={form.exitPrice} onChange={(e) => setExit(e.target.value)} className="bg-secondary border-border h-9 text-sm" />
+        )}
         {field("Pontos",
           <Input type="number" step="0.01" placeholder="0.00" value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} className="bg-secondary border-border h-9 text-sm" />
         )}
